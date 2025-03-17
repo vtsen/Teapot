@@ -3,10 +3,25 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
 export default function App() {
-  const [minutes, setMinutes] = useState(0);
-  const [seconds, setSeconds] = useState(0);
-  const [time, setTime] = useState(minutes * 60 + seconds);
+  const [time, setTime] = useState(60);
   const [hasStarted, setHasStarted] = useState(false);
+
+  const teaData = {
+    Green: { color: '#A8D5BA', brewTime: 20 },
+    Black: { color: '#D2691E', brewTime: 40 },
+    Oolong: { color: '#C08457', brewTime: 30 },
+    White: { color: '#F5F5DC', brewTime: 12 },
+    Herbal: { color: '#FFB6C1', brewTime: 15 },
+  };
+  const [teaType, setTeaType] = useState("Green");
+  const [teaColor, setTeaColor] = useState(teaData['Green'].color);
+  const [brewTime, setBrewTime] = useState(teaData['Green'].brewTime);
+
+  const handleTeaChange = (tea) => {
+    setTeaType(tea);
+    setTeaColor(teaData[tea].color);
+    setBrewTime(teaData[tea].brewTime);
+  };
 
   useEffect(() => {
     let timer;    
@@ -28,7 +43,7 @@ export default function App() {
   };
 
   const startTimer = () => {
-    setTime(minutes * 60 + seconds);
+    setTime(brewTime);
     setHasStarted(true);
   };
 
@@ -36,26 +51,18 @@ export default function App() {
     <View style={styles.container}>
       {!hasStarted ? (
         <>
-          <Text style={styles.label}>Set Timer:</Text>
+          <Text style={styles.label}>Let's start to brew a cup of tea:</Text>
           <View style={styles.pickerContainer}>
             <Picker
-              selectedValue={minutes}
+              selectedValue={teaType}
+              onValueChange={handleTeaChange}
               style={styles.picker}
-              onValueChange={(itemValue) => setMinutes(itemValue)}
             >
-              {Array.from({ length: 6 }, (_, i) => (
-                <Picker.Item key={i} label={`${i} min`} value={i} />
+              {Object.keys(teaData).map((tea) => (
+                <Picker.Item key={tea} label={tea} value={tea} />
               ))}
             </Picker>
-            <Picker
-              selectedValue={seconds}
-              style={styles.picker}
-              onValueChange={(itemValue) => setSeconds(itemValue)}
-            >
-              {Array.from({ length: 12 }, (_, i) => (
-                <Picker.Item key={i*5} label={`${i*5} sec`} value={i*5} />
-              ))}
-            </Picker>
+            <View style={[styles.colorBox, { backgroundColor: teaColor }]} />
           </View>
         </>
       ) : (
@@ -75,9 +82,9 @@ export default function App() {
           ? () => {setHasStarted(false);}
           : startTimer
         } />
-      <Button title="Reset" onPress={() => {
+      <Button title="Start a new cup of tea!" onPress={() => {
         setHasStarted(false);
-        setTime(minutes * 60 + seconds); 
+        setTime(brewTime); 
         }
         } />
     </View>
