@@ -8,10 +8,10 @@ export default function App() {
   const [timerOn, setTimerOn] = useState(false);
 
   const teaData = {
-    Green: { color: '#A8D5BA', preheatTime: 30, brewTime: 90, coolTime: 60 },
-    Black: { color: '#C08457', preheatTime: 30, brewTime: 150, coolTime: 90 },
-    Herbal: { color: '#FFB6C1', preheatTime: 20, brewTime: 60, coolTime: 60 },
-    Test: { color: '#E08691', preheatTime: 8, brewTime: 11, coolTime: 5 },
+    Green: { teaName: 'Grean', color: '#A8D5BA', preheatTime: 30, brewTime: 90, coolTime: 60 },
+    Black: { teaName: 'Black', color: '#C08457', preheatTime: 30, brewTime: 150, coolTime: 90 },
+    Herbal: { teaName: 'Herb', color: '#FFB6C1', preheatTime: 20, brewTime: 60, coolTime: 60 },
+    Test: { teaName: 'Test', color: '#E08691', preheatTime: 8, brewTime: 11, coolTime: 5 },
   };
   const [teaType, setTeaType] = useState('Green');
   const [teaColor, setTeaColor] = useState(teaData['Green'].color);
@@ -21,18 +21,21 @@ export default function App() {
 
   const brewStage = {
     Preheat: {
+      thisStage: 'Preheat',
       nextStage: 'Brew',
       labelText: 'Preheating the teapot', 
       useTime: preHeatTime,
       finishHint: 'Bravo. Next, start your brew.',
       },
     Brew: { 
-       nextStage: 'Cool', 
-       labelText: 'Tea is brewing',
-       useTime: brewTime, 
-       finishHint: 'Nice Brew. Now, cool it in the cup.',
+      thisStage: 'Brew',
+      nextStage: 'Cool', 
+      labelText: 'Tea is brewing',
+      useTime: brewTime, 
+      finishHint: 'Nice Brew. Now, cool it in the cup.',
       },
     Cool: { 
+      thisStage: 'Cool',
       nextStage: 'Preheat',    // loop back to Preheat
       labelText: 'Cooling the tea and yourself',
       useTime: coolTime, 
@@ -44,12 +47,10 @@ export default function App() {
   const handleTeaChange = (tea) => {
     setTeaType(tea);
     setTeaColor(teaData[tea].color);
-    setPreheatTime(teaData[tea].preHeatTime);
-    setBrewTime(teaData[tea].brewTime);
-    setCoolTime(teaData[tea].coolTime);
   };
 
   useEffect(() => {
+    update
     let timer;    
     if (timerOn && time > 0) {
       timer = setInterval(() => {
@@ -63,10 +64,12 @@ export default function App() {
         [
           { text: "OK", onPress: () => 
             {
-              console.log("Finished " + stage.labelText);
-              stage === 'Cool' ? setChoiceMade(false) : () => {};  // reset for next cup
+              console.log("Tea type " + teaData[teaType].teaName);
+              console.log("Finished " + stage.thisStage);
               setStage(brewStage[stage.nextStage]);
+              stage === 'Preheat' ? setChoiceMade(false) : () => {};  // reset for next cup
               setTime(stage.useTime);
+              setTimerOn(false);
               console.log("Started " + stage.nextStage);
             } 
           }
@@ -74,7 +77,7 @@ export default function App() {
       );
     }
     return () => clearInterval(timer);
-  }, [choiceMade, timerOn, time, stage]);
+  }, [choiceMade, timerOn, time, teaType, stage]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -86,6 +89,21 @@ export default function App() {
     setTime(stage.useTime);
     setTimerOn(true);
   };
+
+  const stopTimer = () => {
+    setTimerOn(false);
+    setTime(stage.useTime);
+  };
+
+  const makeChoice = () => {
+    setChoiceMade(true);
+    console.log("Choice made for " + teaData[teaType].teaName);
+    console.log("stage " + stage.thisStage);
+    setPreheatTime(teaData[tea].preHeatTime);
+    setBrewTime(teaData[tea].brewTime);
+    setCoolTime(teaData[tea].coolTime);
+  };
+  
 
   return (
     <View style={[styles.container, { backgroundColor: teaColor }]}>
@@ -108,17 +126,16 @@ export default function App() {
         <>
           <Text style={styles.label}>{stage.labelText}</Text>
           <Text style={styles.hint}>No hurry, just prepare a cup of tea.</Text>
-          <Text style={styles.timer}>{formatTime(time)}</Text>
+          <Text style={styles.timer}>{timerOn ? formatTime(time) : formatTime(stage.useTime)}</Text>
         </>
       )}
 
       <Button title={!choiceMade ? "Choose" : timerOn ? "Redo this step" : "Start this step"} 
         onPress={
           !choiceMade
-          ? () => {setChoiceMade(true);}
+          ? makeChoice
           : timerOn
-          ? () => {setTimerOn(false);}
-          : startTimer
+          ? stopTimer : startTimer
         } />
       <Button title="Start a new cup of tea!" onPress={() => {
         setChoiceMade(false);
