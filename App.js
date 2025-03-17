@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
 export default function App() {
@@ -31,7 +31,19 @@ export default function App() {
       }, 1000);
     } else if (time === 0) {
       setHasStarted(false);
-      alert("Time's up! Next cup of tea! :)");
+      Alert.alert(
+        "Teapot Hint",
+        "Bravo! Enjoy your cup of tea!",
+        [
+          { text: "OK", onPress: () => 
+            {
+              console.log("OK Pressed");
+              setHasStarted(false);
+              //TODO: set stage to next step
+            } 
+          }
+        ]
+      );
     }
     return () => clearInterval(timer);
   }, [hasStarted, time]);
@@ -48,10 +60,10 @@ export default function App() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: teaColor }]}>
       {!hasStarted ? (
         <>
-          <Text style={styles.label}>Let's start to brew a cup of tea:</Text>
+          <Text style={styles.label}>Start brewing a cup of tea</Text>
           <View style={styles.pickerContainer}>
             <Picker
               selectedValue={teaType}
@@ -62,7 +74,6 @@ export default function App() {
                 <Picker.Item key={tea} label={tea} value={tea} />
               ))}
             </Picker>
-            <View style={[styles.colorBox, { backgroundColor: teaColor }]} />
           </View>
         </>
       ) : (
@@ -74,9 +85,7 @@ export default function App() {
         </>
       )}
 
-      <Button title={
-          hasStarted ? "Back" : "Start"
-        } 
+      <Button title={hasStarted ? "Back" : "Start"} 
         onPress={
           hasStarted 
           ? () => {setHasStarted(false);}
@@ -99,7 +108,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'lightblue',
   },
   label: {
-    fontSize: 30,
+    fontSize: 25,
     fontWeight: 'bold',
     color: '#000',
   },
