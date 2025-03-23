@@ -7,10 +7,10 @@ export default function App() {
   const [hasStarted, setHasStarted] = useState(false);
 
   const teaData = {
-    Green: { color: '#B7D5BA', brewTime: 20 },
-    Black: { color: '#A06612', brewTime: 40 },
-    Herbal: { color: '#EFC6D1', brewTime: 15 },
-    Genmai: { color: '#BB9470', brewTime: 30 },
+    Green: { color: '#B7D5BA', brewTime: 120 },
+    Black: { color: '#A06612', brewTime: 240 },
+    Herbal: { color: '#EFC6D1', brewTime: 500 },
+    Genmai: { color: '#BB9470', brewTime: 90 },
   };
   const [teaType, setTeaType] = useState("Green");
   const [teaColor, setTeaColor] = useState(teaData['Green'].color);
