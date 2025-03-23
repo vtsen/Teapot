@@ -4,80 +4,48 @@ import { Picker } from '@react-native-picker/picker';
 
 export default function App() {
   const [time, setTime] = useState(60);
-  const [choiceMade, setChoiceMade] = useState(false);
-  const [timerOn, setTimerOn] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
 
   const teaData = {
-    Green: { teaName: 'Grean', color: '#A8D5BA', preheatTime: 30, brewTime: 90, coolTime: 60 },
-    Black: { teaName: 'Black', color: '#C08457', preheatTime: 30, brewTime: 150, coolTime: 90 },
-    Herbal: { teaName: 'Herb', color: '#FFB6C1', preheatTime: 20, brewTime: 60, coolTime: 60 },
-    Test: { teaName: 'Test', color: '#E08691', preheatTime: 8, brewTime: 11, coolTime: 5 },
+    Green: { color: '#B7D5BA', brewTime: 20 },
+    Black: { color: '#A06612', brewTime: 40 },
+    Herbal: { color: '#EFC6D1', brewTime: 15 },
+    Genmai: { color: '#BB9470', brewTime: 30 },
   };
-  const [teaType, setTeaType] = useState('Green');
+  const [teaType, setTeaType] = useState("Green");
   const [teaColor, setTeaColor] = useState(teaData['Green'].color);
-  const [preHeatTime, setPreheatTime] = useState(teaData['Green'].preheatTime);
   const [brewTime, setBrewTime] = useState(teaData['Green'].brewTime);
-  const [coolTime, setCoolTime] = useState(teaData['Green'].coolTime);
-
-  const brewStage = {
-    Preheat: {
-      thisStage: 'Preheat',
-      nextStage: 'Brew',
-      labelText: 'Preheating the teapot', 
-      useTime: preHeatTime,
-      finishHint: 'Bravo. Next, start your brew.',
-      },
-    Brew: { 
-      thisStage: 'Brew',
-      nextStage: 'Cool', 
-      labelText: 'Tea is brewing',
-      useTime: brewTime, 
-      finishHint: 'Nice Brew. Now, cool it in the cup.',
-      },
-    Cool: { 
-      thisStage: 'Cool',
-      nextStage: 'Preheat',    // loop back to Preheat
-      labelText: 'Cooling the tea and yourself',
-      useTime: coolTime, 
-      finishHint: 'Enjoy your cup of tea.',
-    },
-  }
-  const [stage, setStage] = useState(brewStage['Preheat']);
 
   const handleTeaChange = (tea) => {
     setTeaType(tea);
     setTeaColor(teaData[tea].color);
+    setBrewTime(teaData[tea].brewTime);
   };
 
   useEffect(() => {
-    update
     let timer;    
-    if (timerOn && time > 0) {
+    if (hasStarted && time > 0) {
       timer = setInterval(() => {
         setTime(prevTime => prevTime - 1);
       }, 1000);
     } else if (time === 0) {
-      setTimerOn(false);
+      setHasStarted(false);
       Alert.alert(
         "Teapot Hint",
-        stage.finishHint,
+        "Bravo! Enjoy your cup of tea!",
         [
           { text: "OK", onPress: () => 
             {
-              console.log("Tea type " + teaData[teaType].teaName);
-              console.log("Finished " + stage.thisStage);
-              setStage(brewStage[stage.nextStage]);
-              stage === 'Preheat' ? setChoiceMade(false) : () => {};  // reset for next cup
-              setTime(stage.useTime);
-              setTimerOn(false);
-              console.log("Started " + stage.nextStage);
+              console.log("OK Pressed");
+              setHasStarted(false);
+              //TODO: set stage to next step
             } 
           }
         ]
       );
     }
     return () => clearInterval(timer);
-  }, [choiceMade, timerOn, time, teaType, stage]);
+  }, [hasStarted, time]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -86,30 +54,15 @@ export default function App() {
   };
 
   const startTimer = () => {
-    setTime(stage.useTime);
-    setTimerOn(true);
+    setTime(brewTime);
+    setHasStarted(true);
   };
-
-  const stopTimer = () => {
-    setTimerOn(false);
-    setTime(stage.useTime);
-  };
-
-  const makeChoice = () => {
-    setChoiceMade(true);
-    console.log("Choice made for " + teaData[teaType].teaName);
-    console.log("stage " + stage.thisStage);
-    setPreheatTime(teaData[tea].preHeatTime);
-    setBrewTime(teaData[tea].brewTime);
-    setCoolTime(teaData[tea].coolTime);
-  };
-  
 
   return (
     <View style={[styles.container, { backgroundColor: teaColor }]}>
-      {!choiceMade ? (
+      {!hasStarted ? (
         <>
-          <Text style={styles.label}>Choose type and brew a cup of tea</Text>
+          <Text style={styles.label}>Start brewing a cup of tea</Text>
           <View style={styles.pickerContainer}>
             <Picker
               selectedValue={teaType}
@@ -124,24 +77,22 @@ export default function App() {
         </>
       ) : (
         <>
-          <Text style={styles.label}>{stage.labelText}</Text>
-          <Text style={styles.hint}>No hurry, just prepare a cup of tea.</Text>
-          <Text style={styles.timer}>{timerOn ? formatTime(time) : formatTime(stage.useTime)}</Text>
+        <Text style={styles.hint}>
+          Take the time, slow down, and prepare for a cup of tea.
+          </Text>
+        <Text style={styles.timer}>{formatTime(time)}</Text>
         </>
       )}
 
-      <Button title={!choiceMade ? "Choose" : timerOn ? "Redo this step" : "Start this step"} 
+      <Button title={hasStarted ? "Back" : "Start"} 
         onPress={
-          !choiceMade
-          ? makeChoice
-          : timerOn
-          ? stopTimer : startTimer
+          hasStarted 
+          ? () => {setHasStarted(false);}
+          : startTimer
         } />
       <Button title="Start a new cup of tea!" onPress={() => {
-        setChoiceMade(false);
-        setTimerOn(false);
-        setStage(brewStage['Preheat']);
-        setTime(stage.useTime); 
+        setHasStarted(false);
+        setTime(brewTime); 
         }
         } />
     </View>
